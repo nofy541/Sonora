@@ -238,13 +238,17 @@ const waveChunk = tree.files.app.files._next.files.static.files.chunks.files['43
 const waveSource = payload.toString('utf8', Number(waveChunk.offset), Number(waveChunk.offset) + waveChunk.size);
 const waveMenu = '"data-test-id":f.e8.player.VIBE_CONTEXT_MENU_BUTTON}),(0,u.jsx)(tT.e,{})';
 if (waveSource.split(waveMenu).length !== 2) throw new Error('Expected one My Wave player menu.');
+const nativeFullscreenHandler = 'X=(0,j.c)(()=>{if(o.entityMeta){if(c.modal.isOpened)return void c.modal.close();c.modal.open()}})';
+const nativeFullscreenShortcut = 'addShortcutsListener(tb.M.MAIN,tp.l.TOGGLE_FULLSCREEN_PLAYER,X)';
+if (waveSource.split(nativeFullscreenHandler).length !== 2 || waveSource.split(nativeFullscreenShortcut).length !== 2)
+  throw new Error('Expected the native My Wave fullscreen handler.');
 const waveFullscreen = `"data-test-id":f.e8.player.VIBE_CONTEXT_MENU_BUTTON}),
   (0,u.jsx)("button",{
     type:"button", className:(0,_.$)(tQ().button,tQ().important,"sonora-wave-fullscreen"),
     "aria-label":"Открыть полноэкранный плеер",
-    title:"Полноэкранный плеер", disabled:!V||l.isAdvertShown,
+    title:"Полноэкранный плеер", disabled:!W||l.isAdvertShown,
     "data-sonora-vibe-fullscreen":"",
-    onClick:event=>{event.stopPropagation();G()},
+    onClick:event=>{event.stopPropagation();X()},
     children:(0,u.jsx)("svg",{viewBox:"0 0 24 24",fill:"currentColor","aria-hidden":true,
       children:(0,u.jsx)("use",{href:"/icons/sprite.svg#fullscreen_xs"})})
   }),
