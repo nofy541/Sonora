@@ -1,6 +1,25 @@
+<img src="docs/images/sonora-logo.png" alt="Логотип Sonora" width="96">
+
 # Sonora
 
 Открытая модификация Яндекс Музыки для Windows и лаунчер установки.
+
+## Скриншоты
+
+<table>
+  <tr>
+    <td valign="top">
+      <strong>Настройки «Моей волны»</strong><br>
+      <a href="docs/images/wave-settings.png"><img src="docs/images/wave-settings.png" width="350" alt="Настройки Кольца NCS, палитры и насыщенности «Моей волны»"></a><br>
+      <strong>Наборы иконок</strong><br>
+      <a href="docs/images/icon-packs.png"><img src="docs/images/icon-packs.png" width="350" alt="Выбор встроенного набора иконок Sonora"></a>
+    </td>
+    <td valign="top">
+      <strong>Редактор раскладки</strong><br>
+      <a href="docs/images/layout-editor.png"><img src="docs/images/layout-editor.png" width="250" alt="Настройка вкладок сайдбара, положения блоков и материалов"></a>
+    </td>
+  </tr>
+</table>
 
 ## Возможности
 
