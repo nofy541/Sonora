@@ -4,6 +4,8 @@
 
 Открытая модификация Яндекс Музыки для Windows и лаунчер установки.
 
+[Сайт Sonora](https://nofy541.github.io/Sonora/) · [Владелец проекта в Telegram](https://t.me/nofytech)
+
 ## Скриншоты
 
 <table>

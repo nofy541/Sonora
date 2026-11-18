@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c0a">
+  <meta name="description" content="Sonora — открытый мод для Яндекс Музыки на Windows. Живые обои, визуализатор NCS, анимация текста, настройка раскладки и Discord Rich Presence.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sonora — мод для Яндекс Музыки">
+  <meta property="og:description" content="Настройте визуализатор, обои, тексты и интерфейс Яндекс Музыки на Windows.">
+  <meta property="og:image" content="https://nofy541.github.io/Sonora/images/sonora-logo.png">
+  <link rel="canonical" href="https://nofy541.github.io/Sonora/">
+  <link rel="icon" href="images/sonora-logo.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="wave.js" defer></script>
+  <title>Sonora — мод для Яндекс Музыки</title>
+</head>
+<body>
+  <a class="skip" href="#main">К содержанию</a>
+  <header class="topbar">
+    <div class="wrap topbar-content">
+      <a class="brand" href="./">
+        <img src="images/sonora-logo.png" width="38" height="38" alt="">
+        Sonora
+      </a>
+      <nav aria-label="Разделы сайта">
+        <a href="#features">Возможности</a>
+        <a href="#install">Установка</a>
+        <a href="#owner">Владелец</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="title">
+      <div class="intro">
+        <p class="platform">Windows x64 / Открытый исходный код</p>
+        <h1 id="title">Sonora<span>.</span></h1>
+        <h2>Ваш интерфейс Яндекс Музыки</h2>
+        <p class="lead">Поставьте живые обои, выберите вид Волны, настройте цвета и переместите элементы плеера. Меню Sonora открывается прямо в Музыке.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/nofy541/Sonora/releases/latest">Релизы на GitHub</a>
+          <a class="button" href="#install">Как установить</a>
+        </div>
+      </div>
+      <figure class="visual">
+        <div class="signal" aria-hidden="true">
+          <canvas width="560" height="490"></canvas>
+        </div>
+        <figcaption>Визуализация кольца NCS</figcaption>
+      </figure>
+    </section>
+
+    <section class="section wrap" id="features" aria-labelledby="feature-title">
+      <h2 id="feature-title">Возможности Sonora</h2>
+      <div class="feature-grid">
+        <article>
+          <h3>Живой фон</h3>
+          <p>Картинки, GIF, видео и YouTube. Настраивайте размытие, яркость и положение обоев.</p>
+        </article>
+        <article>
+          <h3>Моя волна</h3>
+          <p>Выбирайте форму, палитру и насыщенность. Кольцо NCS реагирует на частоты трека.</p>
+        </article>
+        <article>
+          <h3>Раскладка и иконки</h3>
+          <p>Перетаскивайте сайдбар и плеер, скрывайте вкладки, выбирайте материалы и наборы иконок.</p>
+        </article>
+        <article>
+          <h3>Тексты и Discord</h3>
+          <p>Буквы проявляются по ходу песни. В Discord можно показать трек, исполнителя, обложку и прогресс.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap" aria-labelledby="preview-title">
+      <h2 id="preview-title">Внутри приложения</h2>
+      <div class="screens">
+        <figure>
+          <a href="images/wave-settings.png"><img src="images/wave-settings.png" width="1080" height="756" alt="Выбор кольца NCS и настройка палитры Волны" loading="lazy"></a>
+          <figcaption>Волна и палитра</figcaption>
+        </figure>
+        <figure>
+          <a href="images/icon-packs.png"><img src="images/icon-packs.png" width="1080" height="1104" alt="Встроенные наборы иконок Sonora" loading="lazy"></a>
+          <figcaption>Наборы иконок</figcaption>
+        </figure>
+        <figure class="layout-preview">
+          <a href="images/layout-editor.png"><img src="images/layout-editor.png" width="676" height="1664" alt="Редактор раскладки с настройками вкладок, плеера и материалов" loading="lazy"></a>
+          <figcaption>Редактор раскладки</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section wrap install" id="install" aria-labelledby="install-title">
+      <div>
+        <h2 id="install-title">Установка</h2>
+        <p>Поддерживаемая версия клиента в текущем релизе — Яндекс Музыка 5.128.0 для Windows x64.</p>
+      </div>
+      <div>
+        <ol>
+          <li>Соберите лаунчер по инструкции в репозитории.</li>
+          <li>Закройте Музыку через значок рядом с часами.</li>
+          <li>Запустите лаунчер и нажмите «Установить Sonora».</li>
+        </ol>
+        <p>Чтобы убрать мод, выберите «Вернуть оригинал» в лаунчере.</p>
+        <a class="button" href="https://github.com/nofy541/Sonora#сборка">Инструкция по сборке</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="owner">
+    <div class="wrap footer-content">
+      <div>
+        <h2>Владелец Sonora</h2>
+        <a class="owner-link" href="https://t.me/nofytech">@nofytech в Telegram</a>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/nofy541/Sonora">Исходники на GitHub</a>
+        <a href="https://github.com/nofy541/Sonora/blob/main/LICENSE">Лицензия MIT</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
