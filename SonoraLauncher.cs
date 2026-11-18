@@ -214,10 +214,13 @@ internal sealed class Launcher : Window {
         layout.Children.Add(new ScrollViewer { Content = log, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled });
         AddChanges(log, "Лаунчер",
             "Проверка релизов GitHub при открытии лаунчера и при входе в Windows.",
+            "Исправлено подключение к GitHub из лаунчера.",
             "Компактное окно с анимированной Волной.",
             "Установка Sonora, запуск Музыки и возврат к оригиналу из одного окна.");
         AddChanges(log, "Яндекс Музыка",
             "Поддержка официальной версии " + Package.MusicVersion + ".",
+            "В редакторе раскладки можно скрыть отдельные вкладки сайдбара.",
+            "Discord Rich Presence показывает трек, обложку и прогресс воспроизведения.",
             "16 встроенных наборов иконок для плеера, сайдбара и эскиза на панели задач.",
             "Полноэкранный плеер открывается прямо с панели «Моей волны».",
             "Обои продолжают играть при переходе в полноэкранный плеер и обратно.",

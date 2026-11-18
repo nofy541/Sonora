@@ -27,6 +27,7 @@ const wallpaper = fs.readFileSync(path.join(__dirname, 'live-wallpaper.js'), 'ut
 const studio = fs.readFileSync(path.join(__dirname, 'studio.js'), 'utf8');
 const taskbar = fs.readFileSync(path.join(__dirname, 'taskbar.cjs'), 'utf8');
 const youtube = fs.readFileSync(path.join(__dirname, 'youtube.cjs'), 'utf8');
+const discord = fs.readFileSync(path.join(__dirname, 'discord.cjs'), 'utf8');
 const iconPacks = fs.readFileSync(path.join(__dirname, 'icon-packs.js'), 'utf8');
 const icons = fs.readFileSync(path.join(__dirname, 'icon-renderer.js'), 'utf8');
 const ncs = fs.readFileSync(path.join(__dirname, 'ncs-wave.js'), 'utf8');
@@ -50,7 +51,32 @@ const bootstrap = `'use strict';
 ${iconPacks}
 ${taskbar}
 ${youtube}
+${discord}
 const electron = require('electron');
+const publishDiscord = createSonoraDiscord();
+let discordContents;
+electron.ipcMain.on('sonora:discord-presence', (event, payload) => {
+  if (!event.senderFrame || event.senderFrame.parent ||
+      !/^music-application:\\/\\/desktop(?:\\/|$)/.test(event.senderFrame.url) ||
+      typeof payload !== 'string' || payload.length > 4096) return;
+  if (!payload) {
+    if (discordContents === event.sender) publishDiscord('', null);
+    return;
+  }
+  let state;
+  try { state = JSON.parse(payload); } catch { return; }
+  if (typeof state?.clientId !== 'string' || !/^\\d{17,20}$/.test(state.clientId)) return;
+  if (discordContents !== event.sender) {
+    discordContents = event.sender;
+    event.sender.once('destroyed', () => {
+      if (discordContents !== event.sender) return;
+      publishDiscord('', null);
+      discordContents = undefined;
+    });
+  }
+  publishDiscord(state.clientId, state.track);
+});
+electron.app.on('before-quit', () => publishDiscord('', null));
 electron.ipcMain.on('sonora:icon-pack', (event, pack) => {
   if (event.senderFrame && !event.senderFrame.parent && /^music-application:\\/\\/desktop(?:\\/|$)/.test(event.senderFrame.url) &&
       typeof pack === 'string' && (pack === 'native' || Object.hasOwn(sonoraPacks, pack)))
@@ -93,6 +119,10 @@ const patchedPreload = preloadSource + `
   const {ipcRenderer} = require('electron');
   document.addEventListener('sonora-icon-pack', event => {
     if (typeof event.detail === 'string' && /^[a-z]{1,20}$/.test(event.detail)) ipcRenderer.send('sonora:icon-pack', event.detail);
+  });
+  document.addEventListener('sonora-discord-config', event => {
+    if (typeof event.detail === 'string' && event.detail.length <= 4096)
+      ipcRenderer.send('sonora:discord-presence', event.detail);
   });
 })();
 `;
@@ -181,8 +211,26 @@ const patchedGraph = audioGraph
   .replace(installTap, installTap + ',sonoraAttachAnalyser(this)')
   .replace(eqOn, eqOn.slice(0, -1) + ',sonoraAttachAnalyser(this))')
   .replace(eqOff, eqOff.slice(0, -1) + ',sonoraAttachAnalyser(this))');
+const playbackHook = 'e.state.playerState.status.onChange(e=>{this.updateMediaSessionPlaybackState(e)})';
+const positionHook = 'l>0&&navigator.mediaSession.setPositionState({duration:l,position:Math.min(d,l)})';
+const positionReset = 'return void navigator.mediaSession.setPositionState()';
+for (const token of [playbackHook, positionHook, positionReset]) {
+  if (layout.split(token).length !== 2) throw new Error('Expected one Media Session hook: ' + token);
+}
+const discordTrack = `(function () {
+  const media = navigator.mediaSession.metadata;
+  const track = e.state.playerState.status.value === V.MT.PLAYING && l > 0 && media?.title ? {
+    title: media.title, artist: media.artist, album: media.album,
+    cover: media.artwork.find(image => image.sizes === '400x400')?.src || media.artwork.at(-1)?.src,
+    position: Math.max(0, Math.min(d, l)), duration: l
+  } : null;
+  document.dispatchEvent(new CustomEvent('sonora-discord-track', { detail: JSON.stringify(track) }));
+})()`;
 const patchedLayout = layout.replace(shortcutHook, shortcutHook + ',' + taskbarHook)
-  .replace(audioGraph, ncsSignal + '\n' + patchedGraph);
+  .replace(audioGraph, ncsSignal + '\n' + patchedGraph)
+  .replace(playbackHook, 'e.state.playerState.status.onChange(t=>{this.updateMediaSessionPlaybackState(t),this.updatePositionState(e)})')
+  .replace(positionHook, positionHook + ',' + discordTrack)
+  .replace(positionReset, "return void (navigator.mediaSession.setPositionState(),document.dispatchEvent(new CustomEvent('sonora-discord-track',{detail:'null'})))");
 new vm.Script(patchedLayout);
 addReplacement(layoutChunk, Buffer.from(patchedLayout));
 

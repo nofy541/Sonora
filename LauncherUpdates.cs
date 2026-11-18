@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
@@ -32,7 +33,10 @@ internal static class LauncherUpdates {
     }
 
     internal static async Task<Version> CheckAsync() {
-        using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(12), MaxResponseContentBufferSize = 1024 * 1024 }) {
+        // The standalone .NET Framework launcher otherwise defaults to legacy TLS.
+        using (var client = new HttpClient(new HttpClientHandler { SslProtocols = SslProtocols.Tls12 }) {
+            Timeout = TimeSpan.FromSeconds(12), MaxResponseContentBufferSize = 1024 * 1024
+        }) {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("SonoraLauncher/" + Package.LauncherVersion);
             client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
             using (var response = await client.GetAsync("https://api.github.com/repos/" + Repository + "/releases/latest").ConfigureAwait(false)) {

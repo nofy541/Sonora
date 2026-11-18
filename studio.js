@@ -1,10 +1,20 @@
 (() => {
   const key = 'ym-wallpaper-studio-v1';
+  const sidebarTabs = {
+    SEARCH: 'Поиск',
+    HOME: 'Моя волна',
+    FOR_YOU_AND_TRENDS: 'Для вас и Тренды',
+    CONCERTS: 'Концерты',
+    NON_MUSIC: 'Книги и подкасты',
+    COLLECTION: 'Коллекция',
+  };
   const prefs = { wave: 'accent', waveShape: 'original', color: '#ffe733', waveVividness: 100, accent: '#ffe733', density: 'native', pins: true, side: 'left', player: 'bottom' };
   try { Object.assign(prefs, JSON.parse(localStorage.getItem(key) || '{}')); } catch {}
   if (['ribbon', 'ncs', 'bars'].includes(prefs.wave)) prefs.wave = 'accent';
   if (!['native', 'continuous'].includes(prefs.lyrics)) prefs.lyrics = 'reveal';
   prefs.lyricsMotion ??= true;
+  prefs.discordEnabled = prefs.discordEnabled === true;
+  if (typeof prefs.discordClientId !== 'string' || !/^\d{17,20}$/.test(prefs.discordClientId)) prefs.discordClientId = '';
   const materials = ['native', 'glass', 'matte', 'solid'];
   for (const key of ['sidebarMaterial', 'playerMaterial', 'cardMaterial']) {
     if (!materials.includes(prefs[key])) prefs[key] = 'native';
@@ -38,8 +48,15 @@
       <button type="button" data-view="icons">Иконки</button>
       <button type="button" data-view="lyrics">Тексты</button>
       <button type="button" data-view="layout">Раскладка</button>
+      <button type="button" data-view="discord">Discord</button>
     </nav>
     <section data-page="wallpaper" class="ymstudio-wallpaper"></section>
+    <section data-page="discord" class="ymstudio-discord" hidden>
+      <label>Показывать трек в Discord <input name="discordEnabled" type="checkbox"></label>
+      <label>Application ID <input type="text" inputmode="numeric" maxlength="20" data-discord-id autocomplete="off" spellcheck="false"></label>
+      <p data-discord-status role="status"></p>
+      <p>Укажи Application ID из Discord Developer Portal и включи показ активности в настольном Discord.</p>
+    </section>
     <section data-page="icons" hidden>
       <h3>Набор иконок</h3>
       <div class="ymstudio-icon-packs" aria-label="Встроенные наборы"></div>
@@ -59,6 +76,11 @@
       <div class="ymstudio-layout-fields" hidden>
       <label>Плотность меню<select name="density"><option value="native">Стандартная</option><option value="compact">Компактная</option><option value="focus">Фокус на контенте</option></select></label>
       <label>Закреплённые плейлисты <input name="pins" type="checkbox"></label>
+      <fieldset class="ymstudio-materials ymstudio-sidebar-tabs">
+        <legend>Вкладки сайдбара</legend>
+        ${Object.entries(sidebarTabs).map(([id, label]) =>
+          `<label>${label}<input name="showNav_${id}" type="checkbox"></label>`).join('')}
+      </fieldset>
       <div class="ymstudio-layout" aria-label="Схема раскладки">
         <div data-slot="top"><button type="button" draggable="true" data-block="player">Плеер</button></div>
         <div data-slot="left"><button type="button" draggable="true" data-block="sidebar">Сайдбар</button></div>
@@ -94,7 +116,36 @@
     <footer><button type="button" data-cancel-layout>Отмена</button><button type="button" data-save-layout>Готово</button></footer>`;
   document.body.append(editor);
   const fields = dialog.querySelector('.ymstudio-layout-fields');
+  const sidebarControls = [...fields.querySelectorAll('.ymstudio-sidebar-tabs input')];
+  for (const control of sidebarControls) prefs[control.name] = prefs[control.name] !== false;
   const layoutTab = fields.parentElement;
+  const discordId = dialog.querySelector('[data-discord-id]');
+  const discordStatus = dialog.querySelector('[data-discord-status]');
+  discordId.value = prefs.discordClientId;
+  discordId.addEventListener('input', () => {
+    discordId.value = discordId.value.replace(/\D/g, '');
+    prefs.discordClientId = discordId.value;
+    save();
+    syncDiscord();
+  });
+  let discordTrack = null;
+  let sentDiscordPayload;
+  function syncDiscord() {
+    const validId = /^\d{17,20}$/.test(prefs.discordClientId);
+    const clientId = prefs.discordEnabled && validId ? prefs.discordClientId : '';
+    const status = !prefs.discordEnabled ? 'Показ активности выключен.' : !validId
+      ? 'Введи Application ID из 17–20 цифр.' : 'Показ активности включён.';
+    if (discordStatus.textContent !== status) discordStatus.textContent = status;
+    const payload = clientId ? JSON.stringify({ clientId, track: discordTrack }) : '';
+    if (sentDiscordPayload === payload) return;
+    sentDiscordPayload = payload;
+    document.dispatchEvent(new CustomEvent('sonora-discord-config', { detail: payload }));
+  }
+  document.addEventListener('sonora-discord-track', event => {
+    if (typeof event.detail !== 'string' || event.detail.length > 4096) return;
+    try { discordTrack = JSON.parse(event.detail); } catch { return; }
+    if (prefs.discordEnabled) syncDiscord();
+  });
   const fieldControls = [...fields.querySelectorAll('[name]')];
   const captions = ['Стандартный', 'Матовое стекло', 'Полупрозрачный', 'Непрозрачный'];
   for (const select of fields.querySelectorAll('[name$=Material]')) {
@@ -139,6 +190,9 @@
     document.documentElement.style.setProperty('--sonora-accent', accent);
     document.documentElement.style.setProperty('--sonora-accent-text', r * .2126 + g * .7152 + b * .0722 > .18 ? '#111' : '#fff');
     document.documentElement.toggleAttribute('data-ymstudio-hide-pins', !prefs.pins);
+    const hiddenTabs = sidebarControls.filter(control => !prefs[control.name]).map(control => control.name.slice('showNav_'.length));
+    document.documentElement.dataset.sonoraHiddenNav = hiddenTabs.join(' ');
+    syncDiscord();
     const waveColor = prefs.wave === 'custom' && validColor(prefs.color) ? prefs.color : accent;
     document.documentElement.toggleAttribute('data-sonora-tint-wave', prefs.wave !== 'native' &&
       (waveColor.toLowerCase() !== '#ffe733' || Number(prefs.waveVividness) !== 100));

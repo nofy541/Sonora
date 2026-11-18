@@ -401,6 +401,25 @@ html[data-ymstudio-side="right"] .ymstudio-editor { inset-inline: 18px auto; }
 .ymstudio-layout-fields > p { margin: 7px 0 12px; color: #c7c7c7; font-size: 12px; }
 .ymstudio-materials { margin: 0; border: 1px solid #414141; border-radius: 10px; padding: 6px 10px 9px; }
 .ymstudio-materials legend { padding-inline: 4px; }
+.ymstudio-sidebar-tabs { margin-top: 6px; }
+.ymstudio-sidebar-tabs input { accent-color: var(--sonora-accent); }
+html[data-sonora-hidden-nav~="SEARCH"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_SEARCH"]),
+html[data-sonora-hidden-nav~="HOME"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_HOME"]),
+html[data-sonora-hidden-nav~="FOR_YOU_AND_TRENDS"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_FOR_YOU_AND_TRENDS"]),
+html[data-sonora-hidden-nav~="CONCERTS"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_CONCERTS"]),
+html[data-sonora-hidden-nav~="NON_MUSIC"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_NON_MUSIC"]),
+html[data-sonora-hidden-nav~="COLLECTION"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_COLLECTION"]) {
+  display: none !important;
+}
+.ymstudio-discord input[type="text"] {
+  width: min(205px, 48%);
+  padding: 6px 9px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #2b2b2b;
+  color: inherit;
+  font: inherit;
+}
 .ymstudio-editor footer { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
 .ymstudio-editor [data-save-layout] { background: var(--sonora-accent); color: var(--sonora-accent-text); border-color: transparent; }
 
