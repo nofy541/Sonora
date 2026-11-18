@@ -54,6 +54,7 @@ ${youtube}
 ${discord}
 const electron = require('electron');
 const publishDiscord = createSonoraDiscord();
+const discordApplicationId = '1572710068309336184';
 let discordContents;
 electron.ipcMain.on('sonora:discord-presence', (event, payload) => {
   if (!event.senderFrame || event.senderFrame.parent ||
@@ -63,9 +64,8 @@ electron.ipcMain.on('sonora:discord-presence', (event, payload) => {
     if (discordContents === event.sender) publishDiscord('', null);
     return;
   }
-  let state;
-  try { state = JSON.parse(payload); } catch { return; }
-  if (typeof state?.clientId !== 'string' || !/^\\d{17,20}$/.test(state.clientId)) return;
+  let track;
+  try { track = JSON.parse(payload); } catch { return; }
   if (discordContents !== event.sender) {
     discordContents = event.sender;
     event.sender.once('destroyed', () => {
@@ -74,7 +74,7 @@ electron.ipcMain.on('sonora:discord-presence', (event, payload) => {
       discordContents = undefined;
     });
   }
-  publishDiscord(state.clientId, state.track);
+  publishDiscord(discordApplicationId, track);
 });
 electron.app.on('before-quit', () => publishDiscord('', null));
 electron.ipcMain.on('sonora:icon-pack', (event, pack) => {

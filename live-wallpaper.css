@@ -388,6 +388,19 @@ use[data-sonora-hidden-icon] { display: none !important; }
   padding: 16px;
   box-shadow: 0 12px 40px #0009;
 }
+.ymstudio-editor[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ymstudio-editor > header, .ymstudio-editor > footer { flex: none; }
+.ymstudio-editor > .ymstudio-layout-fields {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-inline-end: 4px;
+}
 html[data-ymstudio-side="right"] .ymstudio-editor { inset-inline: 18px auto; }
 .ymstudio-editor > header h2 { font-size: 19px; }
 .ymstudio-layout-fields > label, .ymstudio-materials label {
@@ -410,15 +423,6 @@ html[data-sonora-hidden-nav~="CONCERTS"] [class*="NavbarDesktop_root__"] li:has(
 html[data-sonora-hidden-nav~="NON_MUSIC"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_NON_MUSIC"]),
 html[data-sonora-hidden-nav~="COLLECTION"] [class*="NavbarDesktop_root__"] li:has([data-test-id="NAVBAR_NAVIGATION_ITEM_COLLECTION"]) {
   display: none !important;
-}
-.ymstudio-discord input[type="text"] {
-  width: min(205px, 48%);
-  padding: 6px 9px;
-  border: 1px solid #444;
-  border-radius: 8px;
-  background: #2b2b2b;
-  color: inherit;
-  font: inherit;
 }
 .ymstudio-editor footer { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
 .ymstudio-editor [data-save-layout] { background: var(--sonora-accent); color: var(--sonora-accent-text); border-color: transparent; }

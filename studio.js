@@ -14,7 +14,7 @@
   if (!['native', 'continuous'].includes(prefs.lyrics)) prefs.lyrics = 'reveal';
   prefs.lyricsMotion ??= true;
   prefs.discordEnabled = prefs.discordEnabled === true;
-  if (typeof prefs.discordClientId !== 'string' || !/^\d{17,20}$/.test(prefs.discordClientId)) prefs.discordClientId = '';
+  delete prefs.discordClientId;
   const materials = ['native', 'glass', 'matte', 'solid'];
   for (const key of ['sidebarMaterial', 'playerMaterial', 'cardMaterial']) {
     if (!materials.includes(prefs[key])) prefs[key] = 'native';
@@ -53,9 +53,8 @@
     <section data-page="wallpaper" class="ymstudio-wallpaper"></section>
     <section data-page="discord" class="ymstudio-discord" hidden>
       <label>Показывать трек в Discord <input name="discordEnabled" type="checkbox"></label>
-      <label>Application ID <input type="text" inputmode="numeric" maxlength="20" data-discord-id autocomplete="off" spellcheck="false"></label>
       <p data-discord-status role="status"></p>
-      <p>Укажи Application ID из Discord Developer Portal и включи показ активности в настольном Discord.</p>
+      <p>Для отображения трека разреши показ активности в настольном Discord.</p>
     </section>
     <section data-page="icons" hidden>
       <h3>Набор иконок</h3>
@@ -73,7 +72,7 @@
     </section>
     <section data-page="layout" hidden>
       <button type="button" class="ymstudio-edit-button" data-open-layout>Открыть редактор раскладки</button>
-      <div class="ymstudio-layout-fields" hidden>
+      <div class="ymstudio-layout-fields" role="region" aria-label="Настройки раскладки" tabindex="0" hidden>
       <label>Плотность меню<select name="density"><option value="native">Стандартная</option><option value="compact">Компактная</option><option value="focus">Фокус на контенте</option></select></label>
       <label>Закреплённые плейлисты <input name="pins" type="checkbox"></label>
       <fieldset class="ymstudio-materials ymstudio-sidebar-tabs">
@@ -119,24 +118,13 @@
   const sidebarControls = [...fields.querySelectorAll('.ymstudio-sidebar-tabs input')];
   for (const control of sidebarControls) prefs[control.name] = prefs[control.name] !== false;
   const layoutTab = fields.parentElement;
-  const discordId = dialog.querySelector('[data-discord-id]');
   const discordStatus = dialog.querySelector('[data-discord-status]');
-  discordId.value = prefs.discordClientId;
-  discordId.addEventListener('input', () => {
-    discordId.value = discordId.value.replace(/\D/g, '');
-    prefs.discordClientId = discordId.value;
-    save();
-    syncDiscord();
-  });
   let discordTrack = null;
   let sentDiscordPayload;
   function syncDiscord() {
-    const validId = /^\d{17,20}$/.test(prefs.discordClientId);
-    const clientId = prefs.discordEnabled && validId ? prefs.discordClientId : '';
-    const status = !prefs.discordEnabled ? 'Показ активности выключен.' : !validId
-      ? 'Введи Application ID из 17–20 цифр.' : 'Показ активности включён.';
+    const status = prefs.discordEnabled ? 'Показ активности включён.' : 'Показ активности выключен.';
     if (discordStatus.textContent !== status) discordStatus.textContent = status;
-    const payload = clientId ? JSON.stringify({ clientId, track: discordTrack }) : '';
+    const payload = prefs.discordEnabled ? JSON.stringify(discordTrack) : '';
     if (sentDiscordPayload === payload) return;
     sentDiscordPayload = payload;
     document.dispatchEvent(new CustomEvent('sonora-discord-config', { detail: payload }));
