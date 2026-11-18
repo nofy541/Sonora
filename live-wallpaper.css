@@ -1,0 +1,496 @@
+.ymwp-panel, .ymwp-panel * { box-sizing: border-box; }
+.ymwp-panel {
+  --ymwp-accent: var(--sonora-accent, #ffe733);
+  width: 100%;
+  margin: 0 0 28px;
+  padding: clamp(14px, 2.2vw, 22px);
+  border-radius: 20px;
+  border: 1px solid #3a3a3a;
+  background: #191919;
+  color: #f5f5f5;
+  color-scheme: dark;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-app-region: no-drag;
+}
+.ymwp-heading, .ymwp-footer, .ymwp-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ymwp-heading { margin-bottom: 14px; }
+.ymwp-heading h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+.ymwp-toggle { color: #d4d4d4; cursor: pointer; }
+.ymwp-toggle input {
+  appearance: none;
+  margin: 0;
+  width: 38px;
+  height: 22px;
+  border-radius: 20px;
+  background: #454545;
+  cursor: pointer;
+}
+.ymwp-toggle input::before {
+  display: block;
+  content: "";
+  margin: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ddd;
+  transition: transform 140ms ease-out;
+}
+.ymwp-toggle input:checked { background: var(--ymwp-accent); }
+.ymwp-toggle input:checked::before { background: #171717; transform: translateX(16px); }
+.ymwp-preview {
+  position: relative;
+  isolation: isolate;
+  min-height: 124px;
+  max-height: 200px;
+  aspect-ratio: 2.35;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  border: 1px solid #3a3a3a;
+  background: #111;
+}
+.ymwp-preview[data-drag] { outline: 2px solid var(--ymwp-accent); outline-offset: -2px; }
+.ymwp-preview[data-has-media] .ymwp-empty { display: none; }
+.ymwp-preview[data-has-media] { cursor: grab; touch-action: none; }
+.ymwp-preview[data-has-media]:active { cursor: grabbing; }
+.ymwp-empty { color: #a3a3a3; margin-bottom: 18px; }
+.ymwp-preview-label {
+  position: absolute;
+  z-index: 1;
+  inset: auto 10px 10px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  padding: 4px 8px;
+  overflow: hidden;
+  border-radius: 7px;
+  color: #eee;
+  background: #191919d9;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ymwp-sources, .ymwp-link, .ymwp-controls { display: flex; gap: 8px; }
+.ymwp-sources { flex-wrap: wrap; margin-top: 12px; }
+.ymwp-link { flex: 1 1 230px; min-width: 0; }
+.ymwp-panel button, .ymwp-panel select, .ymwp-panel input[type="url"] {
+  min-height: 36px;
+  border: 1px solid #414141;
+  border-radius: 9px;
+  padding: 6px 10px;
+  background: #282828;
+  color: inherit;
+  font: inherit;
+}
+.ymwp-panel button { cursor: pointer; white-space: nowrap; }
+.ymwp-panel button:hover:not(:disabled) { background: #3a3a3a; }
+.ymwp-panel button:disabled { cursor: default; opacity: .42; }
+.ymwp-panel button.ymwp-primary { background: var(--ymwp-accent); color: var(--sonora-accent-text, #191919); border-color: transparent; font-weight: 700; }
+.ymwp-panel button.ymwp-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--ymwp-accent), white 16%); }
+.ymwp-panel :focus-visible { outline: 2px solid var(--ymwp-accent); outline-offset: 2px; }
+.ymwp-panel input[type="url"] { background: #111; flex: 1; min-width: 0; }
+.ymwp-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  padding: 14px 0;
+  margin-top: 14px;
+  border-block: 1px solid #383838;
+}
+.ymwp-controls label { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; }
+.ymwp-controls output { color: #bcbcbc; font-variant-numeric: tabular-nums; }
+.ymwp-controls input, .ymwp-controls select { width: 100%; min-width: 0; margin: 0; }
+.ymwp-controls input { accent-color: var(--ymwp-accent); min-height: 23px; cursor: pointer; }
+.ymwp-footer { margin-top: 12px; }
+.ymwp-footer [role="status"] { color: #c6c6c6; text-wrap: pretty; overflow-wrap: anywhere; }
+.ymwp-footer [data-error="true"] { color: #ffa8a4; }
+.ymwp-wallpaper, .ymwp-media, .ymwp-wallpaper::after, .ymwp-preview[data-has-media]::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ymwp-wallpaper {
+  position: fixed;
+  isolation: isolate;
+  z-index: -1;
+  overflow: hidden;
+  background: #0c0c0c;
+}
+.ymwp-media { display: block; width: 100%; height: 100%; object-fit: var(--ymwp-fit, cover); filter: blur(var(--ymwp-blur, 0px)); }
+.ymwp-media { object-position: var(--ymwp-x, 50%) var(--ymwp-y, 50%); transform-origin: var(--ymwp-x, 50%) var(--ymwp-y, 50%); transform: scale(var(--ymwp-scale, 1)); }
+.ymwp-youtube { border: 0; }
+.ymwp-wallpaper::after, .ymwp-preview[data-has-media]::after { content: ""; background: rgb(0 0 0 / var(--ymwp-dim, .52)); }
+html[data-ymwp-active],
+html[data-ymwp-active] body,
+html[data-ymwp-active] :is([class*="DefaultLayout_root"], [class*="CommonLayout_root"], [class*="App_root"], [class*="WithTopBanner_root"]) {
+  background: transparent !important;
+}
+html[data-ymwp-active] :is([class*="NavbarDesktop_root"], [class*="MainPage_vibe"], [class*="DefaultLayout_container"], [class*="DefaultLayout_rootNewVibe"], [class*="VibePage_root"]) {
+  background: transparent !important;
+  --ym-layout-background-color: transparent !important;
+}
+html[data-ymwp-active] [class*="CommonLayout_root"] { --ym-layout-background-color: transparent; }
+html[data-ymwp-active] [class*="DefaultLayout_navbar__"] { background: transparent !important; box-shadow: none !important; }
+html[data-ymwp-active] :is([class*="NavbarDesktop_scrollableContainer"], [class*="VibeAnimation_root"])::before,
+html[data-ymwp-active] :is([class*="NavbarDesktop_scrollableContainer"], [class*="VibeAnimation_root"])::after { background: transparent !important; }
+html[data-ymwp-active] [class*="VibeAnimation_root"] div,
+html[data-ymwp-active] [class*="VibeAnimation_root"] div::before { box-shadow: none !important; }
+/* Keep the media behind every UI layer. Hide only the regular layout during
+   fullscreen playback so its controls cannot show through the dialog. */
+html[data-ymwp-active]:not([data-ymwp-scope="app"]):has([data-test-id="FULLSCREEN_PLAYER_MODAL"])
+  :is([class*="DefaultLayout_root"], [class*="CommonLayout_content__"], [class*="CommonLayout_playerBar__"], [class*="DefaultLayout_navbar__"]):not([data-test-id="FULLSCREEN_PLAYER_MODAL"] *):not(:has([data-test-id="FULLSCREEN_PLAYER_MODAL"])) {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [data-test-id="FULLSCREEN_PLAYER_MODAL"],
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [data-test-id="FULLSCREEN_PLAYER_MODAL"] > [class*="FullscreenPlayerDesktop_modalContent"],
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [class*="Modal_"]:has(> [data-test-id="FULLSCREEN_PLAYER_MODAL"]) {
+  background: transparent !important;
+}
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [data-test-id="FULLSCREEN_PLAYER_MODAL"]::backdrop {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [data-test-id="FULLSCREEN_PLAYER_MODAL"] [data-test-id="SYNC_LYRICS_CONTENT"]::before,
+html[data-ymwp-active]:not([data-ymwp-scope="app"]) [data-test-id="FULLSCREEN_PLAYER_MODAL"] [data-test-id="SYNC_LYRICS_CONTENT"]::after { content: none; }
+@media (prefers-reduced-motion: reduce) { .ymwp-toggle input::before { transition: none; } }
+
+.ymstudio-launch {
+  position: fixed;
+  top: 38px;
+  right: 32px;
+  z-index: 2147483646;
+  border: 1px solid #494949;
+  border-radius: 7px;
+  padding: 3px 11px;
+  color: #fff;
+  background: #262626;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+.ymstudio-launch:hover { background: #3d3d3d; }
+.ymstudio-titlebar {
+  min-width: 65px;
+  height: 24px;
+  align-self: center;
+  margin-inline-end: 5px;
+  padding-inline: 9px;
+  border: 1px solid #494949 !important;
+  border-radius: 7px !important;
+  color: #fff !important;
+  background: #262626 !important;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.15;
+  -webkit-app-region: no-drag;
+}
+.ymstudio-titlebar:hover { background: #3d3d3d !important; }
+html:has(.ymstudio-titlebar) .ymstudio-launch { display: none; }
+.ymstudio-titlebar:focus-visible { outline: 2px solid var(--sonora-accent, #ffe733); outline-offset: -2px; }
+.ymstudio {
+  box-sizing: border-box;
+  width: min(540px, calc(100vw - 32px));
+  max-height: calc(100dvh - 44px);
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #464646;
+  border-radius: 22px;
+  background: #191919;
+  color: #f5f5f5;
+  color-scheme: dark;
+  font: inherit;
+  -webkit-app-region: no-drag;
+}
+.ymstudio::backdrop { background: #0009; }
+.ymstudio > header, .ymstudio > section > label { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ymstudio > header h2 { font-size: 26px; margin: 0; }
+.ymstudio > nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+.ymstudio > nav button, .ymstudio header button, .ymstudio select {
+  padding: 6px 12px;
+  min-height: 32px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: inherit;
+  background: #2b2b2b;
+  font: inherit;
+}
+.ymstudio button { cursor: pointer; }
+.ymstudio :focus-visible, .ymstudio-launch:focus-visible { outline: 2px solid var(--sonora-accent, #ffe733); outline-offset: 2px; }
+.ymstudio button[aria-pressed="true"] { background: var(--sonora-accent, #ffe733); color: var(--sonora-accent-text, #171717); }
+.ymstudio > section > label { padding: 10px 0; }
+.ymstudio > section p { margin: 8px 0 0; color: #bfbfbf; font-size: 12px; }
+.ymstudio-wallpaper > .ymwp-panel { padding: 13px 0 0; border-width: 1px 0 0; border-radius: 0; margin: 0; }
+.ymstudio-wallpaper .ymwp-heading h2 { font-size: 18px; }
+html[data-sonora-tint-wave] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) {
+  --sonora-wave-palette: hue-rotate(var(--sonora-wave-hue)) saturate(var(--sonora-wave-saturation));
+}
+html[data-sonora-tint-wave] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) canvas {
+  filter: var(--sonora-wave-palette);
+}
+html[data-sonora-wave-shape="compact"] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) canvas {
+  scale: .66;
+}
+html[data-sonora-wave-shape="wide"] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) canvas {
+  scale: .96 .48;
+}
+html[data-sonora-wave-shape="soft"] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) canvas {
+  scale: .84;
+  opacity: .72;
+  filter: var(--sonora-wave-palette, brightness(1)) blur(12px);
+}
+html[data-sonora-wave-shape="ncs"] :is([class*="VibePage_vibeAnimation__"], [class*="VibeBlock_vibeAnimation__"]) canvas:not(.sonora-ncs-ring) {
+  opacity: 0 !important;
+}
+html[data-sonora-wave-shape="ncs"] .sonora-ncs-ring {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: clamp(152px, min(52vw, 46vh), 410px) !important;
+  height: clamp(152px, min(52vw, 46vh), 410px) !important;
+  transform: translate(-50%, -50%);
+  filter: saturate(var(--sonora-wave-saturation, 1)) !important;
+  pointer-events: none;
+}
+
+html[data-ymstudio-accent], html[data-ymstudio-accent] :is(.ym-dark-theme, .ym-light-theme) {
+  --ym-logo-color-primary-player: var(--sonora-accent) !important;
+  --ym-logo-color-primary-variant: var(--sonora-accent) !important;
+  --ym-logo-color-primary-text: var(--sonora-accent) !important;
+  --text-color-accent: var(--sonora-accent) !important;
+  --ym-controls-color-primary-default-enabled: var(--sonora-accent) !important;
+  --ym-controls-color-primary-default-hovered: color-mix(in srgb, var(--sonora-accent), white 16%) !important;
+  --ym-controls-color-primary-default-pressed: color-mix(in srgb, var(--sonora-accent), black 12%) !important;
+  --ym-controls-color-primary-on_default-enabled: var(--sonora-accent-text) !important;
+  --ym-controls-color-primary-on_default-hovered: var(--sonora-accent-text) !important;
+  --ym-controls-color-primary-on_default-pressed: var(--sonora-accent-text) !important;
+  --ym-controls-color-primary-outline-hovered_stroke: var(--sonora-accent) !important;
+  --ym-controls-color-primary-outline-selected_stroke: var(--sonora-accent) !important;
+  accent-color: var(--sonora-accent);
+}
+.ymstudio-filters { position: absolute; width: 0; height: 0; pointer-events: none; }
+#sonora-logo-color feFlood { flood-color: var(--sonora-accent); }
+html[data-ymstudio-accent] [class*="NavbarDesktop_logoLink__"] { filter: url(#sonora-logo-color) !important; }
+.ymstudio [data-hex] { width: 100px; border: 1px solid #555; border-radius: 8px; background: #262626; color: inherit; padding: 6px 8px; font: inherit; }
+.ymstudio-swatches { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 0 5px; }
+.ymstudio-swatches button, .ymstudio-swatches button[aria-pressed="true"] {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ffffff45;
+  border-radius: 50%;
+  background: var(--swatch);
+}
+.ymstudio-swatches button[aria-pressed="true"] { outline: 2px solid #f5f5f5; outline-offset: 2px; }
+.ymstudio-icon-packs { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 7px; }
+.ymstudio-icon-packs button, .ymstudio-icon-packs button[aria-pressed="true"] {
+  border: 1px solid #424242;
+  background: #262626;
+  color: #f5f5f5;
+  min-height: 59px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+  border-radius: 7px;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 12px;
+  text-align: center;
+}
+.ymstudio-icon-packs button[aria-pressed="true"] { border-color: var(--sonora-accent); }
+.ymstudio-icon-sample { display: flex; gap: 6px; color: #f2f2f2; }
+.ymstudio-icon-sample svg { width: 18px; height: 18px; }
+use[data-sonora-hidden-icon] { display: none !important; }
+.sonora-icon-glyph { pointer-events: none; }
+.sonora-wave-fullscreen {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font: inherit;
+}
+.sonora-wave-fullscreen svg { width: 22px; height: 22px; }
+.sonora-wave-fullscreen:focus-visible { outline: 2px solid var(--sonora-accent, #ffe733); outline-offset: 2px; }
+.sonora-wave-fullscreen:disabled { opacity: .4; cursor: default; }
+
+.ymstudio-layout {
+  display: grid;
+  grid-template: "top top top" 44px "left main right" 76px "bottom bottom bottom" 44px /
+    minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+.ymstudio-layout [data-slot], .ymstudio-main {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  border: 1px dashed #585858;
+  border-radius: 8px;
+}
+.ymstudio-layout [data-slot="top"] { grid-area: top; }
+.ymstudio-layout [data-slot="bottom"] { grid-area: bottom; }
+.ymstudio-layout [data-slot="left"] { grid-area: left; }
+.ymstudio-layout [data-slot="right"] { grid-area: right; }
+.ymstudio-main { grid-area: main; color: #ccc; background: #242424; border-style: solid; }
+.ymstudio-layout [data-block] {
+  align-self: stretch;
+  justify-self: stretch;
+  min-width: 0;
+  border: 0;
+  border-radius: 7px;
+  background: #353535;
+  color: inherit;
+  cursor: grab;
+  font: inherit;
+}
+.ymstudio-layout [data-block]:active { cursor: grabbing; }
+.ymstudio-layout[data-dragging="sidebar"] :is([data-slot="left"], [data-slot="right"]),
+.ymstudio-layout[data-dragging="player"] :is([data-slot="top"], [data-slot="bottom"]) {
+  border-color: var(--sonora-accent);
+  background: color-mix(in srgb, var(--sonora-accent) 12%, transparent);
+}
+
+.ymstudio-edit-button, .ymstudio-editor footer button {
+  border: 1px solid #494949;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #262626;
+  color: inherit;
+  font: inherit;
+}
+.ymstudio-editor {
+  position: fixed;
+  z-index: 2147483645;
+  inset: 76px 18px auto auto;
+  width: min(338px, calc(100vw - 36px));
+  max-height: calc(100dvh - 104px);
+  margin: 0;
+  padding: 16px;
+  box-shadow: 0 12px 40px #0009;
+}
+html[data-ymstudio-side="right"] .ymstudio-editor { inset-inline: 18px auto; }
+.ymstudio-editor > header h2 { font-size: 19px; }
+.ymstudio-layout-fields > label, .ymstudio-materials label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-block: 5px;
+}
+.ymstudio-layout-fields > label:first-child { margin-top: 10px; }
+.ymstudio-layout-fields > p { margin: 7px 0 12px; color: #c7c7c7; font-size: 12px; }
+.ymstudio-materials { margin: 0; border: 1px solid #414141; border-radius: 10px; padding: 6px 10px 9px; }
+.ymstudio-materials legend { padding-inline: 4px; }
+.ymstudio-editor footer { display: flex; justify-content: flex-end; gap: 7px; margin-top: 12px; }
+.ymstudio-editor [data-save-layout] { background: var(--sonora-accent); color: var(--sonora-accent-text); border-color: transparent; }
+
+html {
+  --sonora-glass: rgb(23 26 32 / 44%);
+  --sonora-matte: rgb(26 28 34 / 77%);
+  --sonora-solid: #22242a;
+}
+html[data-sonora-sidebar="glass"] { --sonora-sidebar-surface: var(--sonora-glass); --sonora-sidebar-blur: blur(16px); }
+html[data-sonora-sidebar="matte"] { --sonora-sidebar-surface: var(--sonora-matte); }
+html[data-sonora-sidebar="solid"] { --sonora-sidebar-surface: var(--sonora-solid); }
+html[data-sonora-player="glass"] { --sonora-player-surface: var(--sonora-glass); --sonora-player-blur: blur(16px); }
+html[data-sonora-player="matte"] { --sonora-player-surface: var(--sonora-matte); }
+html[data-sonora-player="solid"] { --sonora-player-surface: var(--sonora-solid); }
+html[data-sonora-cards="glass"] { --sonora-card-surface: var(--sonora-glass); --sonora-card-blur: blur(7px); }
+html[data-sonora-cards="matte"] { --sonora-card-surface: var(--sonora-matte); }
+html[data-sonora-cards="solid"] { --sonora-card-surface: var(--sonora-solid); }
+
+html[data-sonora-sidebar]:not([data-sonora-sidebar="native"]) [class*="DefaultLayout_navbar__"] {
+  background: var(--sonora-sidebar-surface) !important;
+  backdrop-filter: var(--sonora-sidebar-blur, none);
+  box-shadow: inset 0 0 0 1px #ffffff13 !important;
+}
+html[data-sonora-player]:not([data-sonora-player="native"]) :is([class*="CommonLayout_playerBar__"], [class*="VibePlayerBar_root__"]) {
+  background: var(--sonora-player-surface) !important;
+  backdrop-filter: var(--sonora-player-blur, none);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px #ffffff13;
+}
+html[data-sonora-cards]:not([data-sonora-cards="native"]) :is([class*="AlbumCard_root__"], [class*="PlaylistCard_root__"], [class*="MixCard_root__"], [class*="ArtistCard_root__"]) {
+  background-color: var(--sonora-card-surface);
+  backdrop-filter: var(--sonora-card-blur, none);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px #ffffff13;
+}
+
+@property --sonora-live-head {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+html:is([data-sonora-lyrics="reveal"], [data-sonora-lyrics="continuous"]) [data-test-id="SYNC_LYRICS_LINE"] [class*="SyncLyricsLine_root__"] {
+  --sync-lyrics-line-font-size: clamp(22px, 3.2vw, 46px);
+  font-weight: 720;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+html:is([data-sonora-lyrics="reveal"], [data-sonora-lyrics="continuous"]) [data-test-id="SYNC_LYRICS_LINE"][class*="line_active__"] [class*="SyncLyricsLine_root__"] {
+  color: #fff;
+  text-shadow: 0 2px 12px #0007;
+}
+html:is([data-sonora-lyrics="reveal"], [data-sonora-lyrics="continuous"]) [data-test-id="SYNC_LYRICS_LINE"][class*="line_active__"] .sonora-lyric-letter {
+  text-shadow:
+    0 1px 4px #0006,
+    0 0 5px #fff3,
+    0 0 11px color-mix(in srgb, var(--sonora-accent, #ffe733) 28%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-sonora-lyrics="reveal"][data-sonora-lyrics-motion] .sonora-lyric-letter {
+    opacity: clamp(.24, calc((var(--sonora-lyric-head, 0) - var(--sonora-letter-index)) * .66), 1);
+    transition: opacity 115ms linear;
+  }
+  html[data-sonora-lyrics="continuous"][data-sonora-lyrics-motion] .sonora-lyric-letter {
+    opacity: clamp(.24, calc(.24 + (var(--sonora-live-head) - var(--sonora-letter-index)) * .55), 1);
+  }
+}
+@media (min-width: 768px) {
+  html[data-ymstudio-player="top"]:not([data-ymstudio-side="right"]) [class*="DefaultLayout_root__"] {
+    grid-template-areas: "playerbar playerbar" "navbar content" "barBelow barBelow" !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+  }
+  html[data-ymstudio-player="top"][data-ymstudio-side="right"] [class*="DefaultLayout_root__"] {
+    grid-template-areas: "playerbar playerbar" "content navbar" "barBelow barBelow" !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+  }
+  html[data-ymstudio-player="top"] [class*="VibePage_playerBlock__"] { order: -1; }
+}
+html[data-ymstudio-hide-pins] [class*="NavbarDesktop_pinsList__"] { display: none !important; }
+html[data-ymstudio-density="compact"] [class*="NavbarDesktop_navigation__"] { row-gap: 1px !important; }
+html[data-ymstudio-density="compact"] [class*="NavbarDesktop_navigation__"] :is(a, button) { min-height: 34px !important; }
+html[data-ymstudio-density="focus"] [class*="NavbarDesktop_pinsList__"] { display: none !important; }
+html[data-ymstudio-density="focus"] [class*="NavbarDesktop_title__"] { max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 768px) {
+  html:is([data-ymstudio-density="compact"], [data-ymstudio-density="focus"]) [class*="DefaultLayout_navbar__"] { min-width: 0 !important; width: 100% !important; }
+  html[data-ymstudio-density="compact"] :is([class*="DefaultLayout_root__"], [class*="DefaultLayout_rootNewVibe__"]) { grid-template-columns: 160px minmax(0, 1fr) !important; }
+  html[data-ymstudio-density="focus"] :is([class*="DefaultLayout_root__"], [class*="DefaultLayout_rootNewVibe__"]) { grid-template-columns: 126px minmax(0, 1fr) !important; }
+  html[data-ymstudio-side="right"] [class*="DefaultLayout_rootNewVibe__"] { grid-template-areas: "content navbar" "barBelow barBelow" !important; }
+  html[data-ymstudio-side="right"]:not([data-ymstudio-player="top"]) [class*="DefaultLayout_root__"] { grid-template-areas: "content navbar" "playerbar playerbar" "barBelow barBelow" !important; }
+  html[data-ymstudio-side="right"] :is([class*="DefaultLayout_root__"], [class*="DefaultLayout_rootNewVibe__"]) { grid-template-columns: minmax(0, 1fr) 220px !important; }
+  html[data-ymstudio-side="right"][data-ymstudio-density="compact"] :is([class*="DefaultLayout_root__"], [class*="DefaultLayout_rootNewVibe__"]) { grid-template-columns: minmax(0, 1fr) 160px !important; }
+  html[data-ymstudio-side="right"][data-ymstudio-density="focus"] :is([class*="DefaultLayout_root__"], [class*="DefaultLayout_rootNewVibe__"]) { grid-template-columns: minmax(0, 1fr) 126px !important; }
+}
+

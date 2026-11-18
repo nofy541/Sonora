@@ -1,0 +1,18 @@
+const sonoraPacks = {
+  clean:    { name: 'Контур', width: 1.65 },
+  micro:    { name: 'Тонкие', width: 1.05 },
+  bold:     { name: 'Жирные', width: 2.65 },
+  rounded:  { name: 'Мягкие', width: 2.15, shell: 'soft' },
+  square:   { name: 'Квадраты', width: 1.45, shell: 'square' },
+  ring:     { name: 'Кольца', width: 1.55, shell: 'ring' },
+  diamond:  { name: 'Ромбы', width: 1.6, shell: 'diamond' },
+  hex:      { name: 'Шестиугольники', width: 1.6, shell: 'hex' },
+  solid:    { name: 'Монохром', width: 1.95, filled: true },
+  negative: { name: 'Инверсия', width: 1.75, shell: 'ring', inverse: true },
+  brackets: { name: 'Углы', width: 1.35, shell: 'brackets' },
+  techno:   { name: 'Техно', width: 1.3, shell: 'square', sharp: true, ink: '#a8ecff' },
+  neon:     { name: 'Лайм', width: 1.65, shell: 'hex', ink: '#c6ff4a' },
+  cobalt:   { name: 'Кобальт', width: 1.65, shell: 'ring', ink: '#9bb3ff' },
+  ember:    { name: 'Янтарь', width: 2.1, shell: 'soft', ink: '#ffba78' },
+  mint:     { name: 'Мята', width: 1.45, shell: 'diamond', ink: '#91e6c4' },
+};

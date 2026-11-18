@@ -1,0 +1,10 @@
+studio-build/
+studio-official/
+pulsesync-rollback/
+*.exe
+*.asar
+*.gz
+SonoraPackage.cs
+bin/
+obj/
+.env*
