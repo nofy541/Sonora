@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const vm = require('node:vm');
+const { musicVersion } = require('./target.json');
 
 const install = process.env.SONORA_MUSIC_DIR || path.join(process.env.LOCALAPPDATA || '', 'Programs', 'YandexMusic');
 const stage = path.join(__dirname, 'studio-build');
@@ -16,7 +17,7 @@ const tree = JSON.parse(header);
 const payload = archive.subarray(8 + archive.readUInt32LE(4));
 const pkg = tree.files['package.json'];
 const metadata = JSON.parse(payload.subarray(Number(pkg.offset), Number(pkg.offset) + pkg.size));
-if (metadata.version !== '5.127.0') throw new Error('This build requires Yandex Music 5.127.0.');
+if (metadata.version !== musicVersion) throw new Error(`This build requires Yandex Music ${musicVersion}, found ${metadata.version}.`);
 const entry = path.posix.normalize(metadata.main);
 const file = entry.split('/').reduce((node, part) => node.files[part], tree);
 const offset = Number(file.offset);
@@ -98,16 +99,16 @@ const patchedPreload = preloadSource + `
 new vm.Script(patchedPreload);
 addReplacement(preloadEntry, Buffer.from(patchedPreload));
 
-const lyricsChunk = tree.files.app.files._next.files.static.files.chunks.files['9427.1ff43f90f4440df7.js'];
+const lyricsChunk = tree.files.app.files._next.files.static.files.chunks.files['1824.32ff8115b098fdcd.js'];
 const lyrics = payload.toString('utf8', Number(lyricsChunk.offset), Number(lyricsChunk.offset) + lyricsChunk.size);
-const lineView = 'let sT=e=>{let{className:t,text:a}=e;return(0,h.jsx)("span",{className:(0,ew.$)(sf().root,t),children:a})}';
-const lineCall = 'children:(0,h.jsx)(sT,{text:e.text})},e.key)';
+const lineView = 'let sA=e=>{let{className:t,text:a}=e;return(0,h.jsx)("span",{className:(0,ew.$)(sb().root,t),children:a})}';
+const lineCall = 'children:(0,h.jsx)(sA,{text:e.text})},e.key)';
 const statusSource = '{fullscreenPlayer:{syncLyrics:c}}=(0,N.g)(),d=(0,b.useCallback)';
 for (const token of [lineView, lineCall, statusSource]) {
   if (lyrics.split(token).length !== 2) throw new Error('Expected one matching synchronized lyrics component.');
 }
 const lineRenderer = `const sonoraGraphemes = new Intl.Segmenter(undefined, {granularity:"grapheme"});
-let sT = ({className, text, reveal, spanSeconds, playing, rate}) => {
+let sA = ({className, text, reveal, spanSeconds, playing, rate}) => {
   const graphemes = (0,b.useMemo)(() => typeof text === "string" ? Array.from(sonoraGraphemes.segment(text), x => x.segment) : [], [text]);
   const revealing = Number.isFinite(reveal) && graphemes.length > 0;
   const node = (0,b.useRef)(null);
@@ -135,20 +136,20 @@ let sT = ({className, text, reveal, spanSeconds, playing, rate}) => {
   (0,b.useLayoutEffect)(() => () => animation.current?.cancel(), []);
   return (0,h.jsx)("span", {
     ref:node,
-    className:(0,ew.$)(sf().root,className),
+    className:(0,ew.$)(sb().root,className),
     style:revealing ? {"--sonora-lyric-head":head,"--sonora-live-head":head} : undefined,
     children:revealing ? graphemes.map((letter,index) => (0,h.jsx)("span", {
       className:"sonora-lyric-letter", style:{"--sonora-letter-index":index}, children:letter
     },index)) : text
   });
 }`;
-const timedLine = 'children:(0,h.jsx)(sT,(()=>{const spanSeconds=Math.max(.1,(c.lines?.[t+1]?.fromSec??c.endSec??e.fromSec+3.5)-e.fromSec);return{text:e.text,spanSeconds,reveal:t===u&&!n?Math.min(1,Math.max(0,(l-e.fromSec)/spanSeconds)):undefined,playing:sonoraState.status===sy.MT.PLAYING,rate:Number(r?.state.playerState.playbackRate?.value)||1}})())},e.key)';
+const timedLine = 'children:(0,h.jsx)(sA,(()=>{const spanSeconds=Math.max(.1,(c.lines?.[t+1]?.fromSec??c.endSec??e.fromSec+3.5)-e.fromSec);return{text:e.text,spanSeconds,reveal:t===u&&!n?Math.min(1,Math.max(0,(l-e.fromSec)/spanSeconds)):undefined,playing:sonoraState.status===sx.MT.PLAYING,rate:Number(r?.state.playerState.playbackRate?.value)||1}})())},e.key)';
 const patchedLyrics = lyrics.replace(lineView, lineRenderer).replace(lineCall, timedLine)
   .replace(statusSource, '{fullscreenPlayer:{syncLyrics:c},sonataState:sonoraState}=(0,N.g)(),d=(0,b.useCallback)');
 new vm.Script(patchedLyrics);
 addReplacement(lyricsChunk, Buffer.from(patchedLyrics));
 
-const layoutChunk = tree.files.app.files._next.files.static.files.chunks.files.app.files['(product)'].files['layout-559f151556799079.js'];
+const layoutChunk = tree.files.app.files._next.files.static.files.chunks.files.app.files['(product)'].files['layout-0e6c540f981e0383.js'];
 const layout = payload.toString('utf8', Number(layoutChunk.offset), Number(layoutChunk.offset) + layoutChunk.size);
 const shortcutHook = '(0,s.useEffect)(()=>(null==i||i.listen(),()=>{null==i||i.stopListening()}),[i])';
 if (layout.split(shortcutHook).length !== 2) throw new Error('Expected one native shortcuts provider.');
@@ -166,8 +167,8 @@ const taskbarHook = `(0,s.useEffect)(() => {
     document.documentElement.removeAttribute("data-sonora-taskbar-controls");
   };
 }, [i])`;
-const graphStart = layout.indexOf('class tS{connectNodes()');
-const graphEnd = layout.indexOf('}class tP{createGraphs(', graphStart);
+const graphStart = layout.indexOf('class tP{connectNodes()');
+const graphEnd = layout.indexOf('}class tA{createGraphs(', graphStart);
 if (graphStart < 0 || graphEnd < 0) throw new Error('Expected the native audio graph.');
 const audioGraph = layout.slice(graphStart, graphEnd);
 const installTap = 'this.config=t,this.connectNodes()';
@@ -185,7 +186,7 @@ const patchedLayout = layout.replace(shortcutHook, shortcutHook + ',' + taskbarH
 new vm.Script(patchedLayout);
 addReplacement(layoutChunk, Buffer.from(patchedLayout));
 
-const waveChunk = tree.files.app.files._next.files.static.files.chunks.files['2009-dc28e54eb8251823.js'];
+const waveChunk = tree.files.app.files._next.files.static.files.chunks.files['4362-7ace0494e2a6f30a.js'];
 const waveSource = payload.toString('utf8', Number(waveChunk.offset), Number(waveChunk.offset) + waveChunk.size);
 const waveMenu = '"data-test-id":f.e8.player.VIBE_CONTEXT_MENU_BUTTON}),(0,u.jsx)(tT.e,{})';
 if (waveSource.split(waveMenu).length !== 2) throw new Error('Expected one My Wave player menu.');

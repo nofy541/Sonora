@@ -61,7 +61,7 @@ internal sealed class MusicInstall {
                 process.WaitForExit();
                 if (process.ExitCode != 0) throw new IOException("Установщик Музыки завершился с кодом " + process.ExitCode);
             }
-            if (Inspect() != MusicState.Original) throw new IOException("Файлы установленной Музыки отличаются от ожидаемой версии 5.127.0.");
+            if (Inspect() != MusicState.Original) throw new IOException("Файлы установленной Музыки отличаются от ожидаемой версии " + Package.MusicVersion + ".");
         } finally {
             try { if (File.Exists(installer)) File.Delete(installer); Directory.Delete(folder); } catch (IOException) {}
         }
@@ -72,7 +72,7 @@ internal sealed class MusicInstall {
         var state = Inspect();
         if (state == (modded ? MusicState.Modded : MusicState.Original)) return;
         if (state != MusicState.Older && state != (modded ? MusicState.Original : MusicState.Modded))
-            throw new InvalidOperationException("Эта сборка совместима только с Яндекс Музыкой 5.127.0.");
+            throw new InvalidOperationException("Эта сборка совместима только с Яндекс Музыкой " + Package.MusicVersion + ".");
         string suffix = "." + Guid.NewGuid().ToString("N");
         string exeStage = Exe + suffix + ".tmp", archiveStage = Archive + suffix + ".tmp";
         string exeBackup = Exe + suffix + ".bak", archiveBackup = Archive + suffix + ".bak";

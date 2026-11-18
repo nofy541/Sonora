@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,11 +14,14 @@ internal sealed class Launcher : Window {
     readonly MusicInstall music = new MusicInstall(Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "YandexMusic"));
     readonly TextBlock status, details;
+    readonly TextBlock updateStatus;
+    readonly Button checkUpdates, openRelease;
     readonly Button primary, install, restore, refresh;
     readonly ProgressBar progress;
     readonly Grid page;
     MusicState state;
     bool busy, known;
+    Version availableUpdate;
     const string Accent = "#C6FF4A";
     const string Text = "#EBEDE5";
     const string Muted = "#A1A79B";
@@ -30,20 +34,31 @@ internal sealed class Launcher : Window {
                 MusicInstall.SelfTest(args[1], args[2], args.Length == 4 ? args[3] : null);
                 VerifyChanges();
                 File.AppendAllText(Path.Combine(args[2], "result.txt"), Environment.NewLine + "PASS: changelog panel opens, shows both sections, and closes.");
+                LauncherUpdates.SelfTest();
+                File.AppendAllText(Path.Combine(args[2], "result.txt"), Environment.NewLine + "PASS: update version comparison and invalid release rejection.");
                 return 0;
             }
             catch (Exception ex) { File.WriteAllText(Path.Combine(args[2], "result.txt"), ex.ToString()); return 1; }
         }
+        bool startup = args.Length == 1 && args[0] == LauncherUpdates.StartupArgument;
+        Version update = null;
+        if (startup) {
+            try {
+                if (!LauncherUpdates.StartsWithWindows) return 0;
+                update = LauncherUpdates.CheckAsync().GetAwaiter().GetResult();
+                if (update == null) return 0;
+            } catch (Exception) { return 0; }
+        }
         bool created;
         using (var instance = new System.Threading.Mutex(true, "Local\\SonoraLauncher", out created)) {
             if (!created) return 0;
-            return new Application().Run(new Launcher());
+            return new Application().Run(new Launcher(update));
         }
     }
 
-    Launcher() {
+    Launcher(Version startupUpdate) {
         Title = "Sonora Launcher";
-        Width = 830; Height = 455; MinWidth = 670; MinHeight = 405;
+        Width = 830; Height = 540; MinWidth = 670; MinHeight = 405;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         Background = Brush("#0B0C0A");
         FontFamily = new FontFamily("IBM Plex Mono, Consolas, Segoe UI");
@@ -101,6 +116,42 @@ internal sealed class Launcher : Window {
         details.TextWrapping = TextWrapping.Wrap;
         System.Windows.Automation.AutomationProperties.SetLiveSetting(details, System.Windows.Automation.AutomationLiveSetting.Polite);
         controls.Children.Add(details);
+        var updates = new WrapPanel();
+        checkUpdates = ActionButton("Проверить обновления", false);
+        checkUpdates.Click += async delegate { await CheckForUpdates(); };
+        openRelease = ActionButton("Открыть релиз", true);
+        openRelease.Visibility = Visibility.Collapsed;
+        openRelease.Click += delegate {
+            try { Process.Start(new ProcessStartInfo(LauncherUpdates.ReleaseUrl(availableUpdate)) { UseShellExecute = true }); }
+            catch (Exception) { updateStatus.Text = "Не удалось открыть GitHub в браузере."; }
+        };
+        updates.Children.Add(checkUpdates);
+        updates.Children.Add(openRelease);
+        var startup = new CheckBox {
+            Content = "Проверять при входе в Windows", Foreground = Brush(Text),
+            Margin = new Thickness(4, 0, 8, 4), VerticalAlignment = VerticalAlignment.Center
+        };
+        updates.Children.Add(startup);
+        controls.Children.Add(updates);
+        updateStatus = Label("", 12, Muted);
+        updateStatus.TextWrapping = TextWrapping.Wrap;
+        System.Windows.Automation.AutomationProperties.SetLiveSetting(updateStatus, System.Windows.Automation.AutomationLiveSetting.Polite);
+        controls.Children.Add(updateStatus);
+        string executable = typeof(Launcher).Assembly.Location;
+        try {
+            startup.IsChecked = LauncherUpdates.StartsWithWindows;
+            LauncherUpdates.ConfigureStartup(startup.IsChecked == true, executable);
+        } catch (Exception) {
+            startup.IsChecked = false;
+            startup.ToolTip = "Windows не дала настроить автозапуск.";
+        }
+        startup.Click += delegate {
+            try { LauncherUpdates.ConfigureStartup(startup.IsChecked == true, executable); }
+            catch (Exception) {
+                startup.IsChecked = startup.IsChecked != true;
+                updateStatus.Text = "Не удалось изменить автозапуск.";
+            }
+        };
         Put(page, controls, 1);
         UpdateUI();
         Loaded += async delegate {
@@ -109,9 +160,27 @@ internal sealed class Launcher : Window {
                 var slide = new TranslateTransform(); page.RenderTransform = slide;
                 slide.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(9, 0, TimeSpan.FromMilliseconds(240)) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut } });
             }
-            await Execute("Проверяем установку…", null);
+            if (startupUpdate != null) ShowUpdate(startupUpdate);
+            await Task.WhenAll(Execute("Проверяем установку…", null),
+                startupUpdate == null ? CheckForUpdates() : Task.FromResult(0));
         };
         Closing += (sender, e) => { if (busy) e.Cancel = true; };
+    }
+
+    async Task CheckForUpdates() {
+        checkUpdates.IsEnabled = false;
+        updateStatus.Text = "Проверяем GitHub…";
+        try { ShowUpdate(await LauncherUpdates.CheckAsync()); }
+        catch (Exception) { updateStatus.Text = "GitHub недоступен. Повторите проверку позже."; }
+        finally { checkUpdates.IsEnabled = true; }
+    }
+
+    void ShowUpdate(Version update) {
+        availableUpdate = update;
+        openRelease.Visibility = update == null ? Visibility.Collapsed : Visibility.Visible;
+        updateStatus.Text = update == null
+            ? "Установлена актуальная версия Sonora " + Package.LauncherVersion + "."
+            : "Доступна Sonora " + update + ".";
     }
 
     static void UseDarkFrame(Window window) {
@@ -144,9 +213,11 @@ internal sealed class Launcher : Window {
         var log = new StackPanel();
         layout.Children.Add(new ScrollViewer { Content = log, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled });
         AddChanges(log, "Лаунчер",
+            "Проверка релизов GitHub при открытии лаунчера и при входе в Windows.",
             "Компактное окно с анимированной Волной.",
             "Установка Sonora, запуск Музыки и возврат к оригиналу из одного окна.");
         AddChanges(log, "Яндекс Музыка",
+            "Поддержка официальной версии " + Package.MusicVersion + ".",
             "16 встроенных наборов иконок для плеера, сайдбара и эскиза на панели задач.",
             "Полноэкранный плеер открывается прямо с панели «Моей волны».",
             "Обои продолжают играть при переходе в полноэкранный плеер и обратно.",
@@ -176,8 +247,9 @@ internal sealed class Launcher : Window {
         window.Show();
         var panel = (DockPanel)window.Content;
         var list = (StackPanel)((ScrollViewer)panel.Children[2]).Content;
-        bool created = window.IsVisible && list.Children.Count == 15 &&
-            ((TextBlock)list.Children[0]).Text == "Лаунчер" && ((TextBlock)list.Children[4]).Text == "Яндекс Музыка";
+        bool created = window.IsVisible &&
+            list.Children.OfType<TextBlock>().Any(row => row.Text == "Лаунчер") &&
+            list.Children.OfType<TextBlock>().Any(row => row.Text == "Яндекс Музыка");
         ((Button)panel.Children[1]).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         if (!created || window.IsVisible) throw new Exception("Changelog UI could not be opened or dismissed.");
     }
@@ -201,11 +273,11 @@ internal sealed class Launcher : Window {
         catch (Exception error) { known = false; failure = failure ?? error.Message; }
         busy = false; UpdateUI();
         if (failure != null) Details(failure, true);
-        else if (state == MusicState.Modded) Details("Яндекс Музыка 5.127.0", false);
+        else if (state == MusicState.Modded) Details("Яндекс Музыка " + Package.MusicVersion, false);
         else if (state == MusicState.Original) Details("Музыка готова к установке Sonora. Для замены файлов закройте Музыку в трее.", false);
         else if (state == MusicState.Older) Details("В комплекте есть более свежая сборка Sonora. Закройте Музыку, чтобы обновиться.", false);
-        else if (state == MusicState.Missing) Details("В комплект входит официальный установщик Яндекс Музыки 5.127.0.", false);
-        else Details("Эта установка отличается от совместимой сборки 5.127.0. Можно открыть установленную Музыку.", false);
+        else if (state == MusicState.Missing) Details("В комплект входит официальный установщик Яндекс Музыки " + Package.MusicVersion + ".", false);
+        else Details("Эта установка отличается от совместимой сборки " + Package.MusicVersion + ". Обновите Музыку и нажмите «Обновить статус».", false);
     }
     void Details(string message, bool error) { details.Text = message; details.Foreground = Brush(error ? "#FF9D95" : Muted); }
     void UpdateUI() {
